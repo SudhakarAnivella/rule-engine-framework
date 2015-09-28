@@ -1,45 +1,104 @@
 package com.turvo.rules.integration;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
+import org.junit.Before;
 import org.junit.Test;
 
+import com.turvo.rules.base.RDBRuleBase;
+import com.turvo.rules.base.RuleBase;
 import com.turvo.rules.base.config.DatastoreConfig;
 import com.turvo.rules.knowledgebase.manager.KnowledgebaseManager;
 import com.turvo.rules.knowledgebase.manager.KnowledgebaseManagerImpl;
+import com.turvo.rules.model.Rule;
+import com.turvo.rules.model.RuleMeta;
 import com.turvo.rules.validation.Validator;
 import com.turvo.rules.validation.ValidatorImpl;
 import com.turvo.rules.validation.input.FactsRecord;
 
 public class ValidateTest {
 
+	static String[] ruleFiles = { "rules/test_rule_1.drl",
+			"rules/test_rule_2.drl", "rules/test_rule_3.drl" };
+
+	private static Validator v = null;
+
+	static {
+		String dbUrl = "jdbc:hsqldb:mem:test";
+		String driverClass = "org.hsqldb.jdbcDriver";
+		String username = "sa";
+		String password = "";
+
+		DatastoreConfig config = new DatastoreConfig(dbUrl, driverClass,
+				username, password);
+		Properties miscProperties = new Properties();
+		miscProperties.setProperty("hibernate.dialect",
+				"org.hibernate.dialect.HSQLDialect");
+		miscProperties.setProperty("hibernate.hbm2ddl.auto", "create");
+
+		RuleBase testRuleBase = new RDBRuleBase(config, miscProperties);
+
+		List<Rule> rules = new ArrayList<Rule>();
+		int i = 1;
+		for (String fileName : ruleFiles) {
+			Path path = null;
+			try {
+				path = Paths
+						.get(ClassLoader.getSystemResource(fileName).toURI());
+			}
+			catch (URISyntaxException e1) {
+				e1.printStackTrace();
+			}
+			Rule r = new Rule();
+			r.setActive(true);
+			r.setRuleName("rule_" + i);
+			try {
+				r.setRuleText(Files.readAllBytes(path));
+			}
+			catch (IOException e) {
+				// TODO LOG error
+			}
+			rules.add(r);
+			++i;
+			testRuleBase.persistRule(r);
+		}
+		KnowledgebaseManager km = new KnowledgebaseManagerImpl(testRuleBase);
+		v = new ValidatorImpl(km);
+
+		RuleMeta rm1 = new RuleMeta("test_customer", "t3", "ag3", true);
+		testRuleBase.persistRuleMeta(rm1);
+		RuleMeta rm2 = new RuleMeta("test_customer", "t2", "ag2", true);
+		testRuleBase.persistRuleMeta(rm2);
+	}
+
+	@Before
+	public void setUp() throws IOException {
+	}
+
 	@Test
 	public void testValidate() {
-		DatastoreConfig dsConfig = new DatastoreConfig(
-				"jdbc:mysql://localhost/test", "org.gjt.mm.mysql.Driver",
-				"root", "turvo");
-		KnowledgebaseManager km = new KnowledgebaseManagerImpl(dsConfig);
 		FactsRecord fr = new FactsRecord();
-
 		Map<String, Object> topMap = new HashMap<String, Object>();
 		Map<String, String> statusMap = new HashMap<String, String>();
 		statusMap.put("note", "");
 		topMap.put("status", statusMap);
 		fr.setFactSet(topMap);
-
+		// fr.setAgendaGroups(Arrays.asList("ag2", "ag1"));
+		fr.setContext("t3");
+		//fr.setCustomerId("test_customer");
 		List<String> errors = new ArrayList<String>();
 		Map<String, Object> globalParams = new HashMap<String, Object>();
 		globalParams.put("errors", errors);
 		fr.setGlobalParamsMap(globalParams);
-
-		Validator v = new ValidatorImpl(km);
 		v.validateFacts(fr);
-
-		for (String error : errors) {
-			System.out.println("Error : " + error);
-		}
 	}
 }

@@ -1,0 +1,18 @@
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.apache.commons.lang3.StringUtils;
+import java.util.HashMap;
+
+global java.util.List errors
+
+rule "Status.note "
+agenda-group "ag1"
+when
+	$map:Map(keySet contains "status")
+	Entry(getKey() == "status", $statusMap : ((Map)getValue())) from $map.entrySet() 
+	Entry(key == "note", $note : ((String)value) && (StringUtils.isEmpty($note) == true)) from $statusMap.entrySet()
+then
+	errors.add("Error in Status.note");
+	System.out.println("Status.note is null");
+end

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.common.base.Preconditions;
@@ -17,9 +17,9 @@ import com.turvo.rules.internal.drools.service.CorePlatformService;
 import com.turvo.rules.internal.drools.service.DroolsService;
 import com.turvo.rules.misc.ErrorConstants;
 import com.turvo.rules.model.Rule;
+import com.turvo.rules.model.RuleMeta;
 
-public class KnowledgebaseManagerImpl
-		implements KnowledgeBaseManagerInternal {
+public class KnowledgebaseManagerImpl implements KnowledgeBaseManagerInternal {
 	private RuleBase ruleBase;
 
 	private CorePlatformService platformService;
@@ -37,22 +37,45 @@ public class KnowledgebaseManagerImpl
 		isKnowledgeBaseReady = Boolean.TRUE;
 	}
 
+	public KnowledgebaseManagerImpl(RuleBase ruleBase) {
+		Preconditions.checkNotNull(ruleBase,
+				ErrorConstants.NULL_RULE_BASE_ERROR_MESSAGE);
+		this.platformService = new DroolsService();
+		this.ruleBase = ruleBase;
+		buildKnowledgeBase();
+		isKnowledgeBaseReady = Boolean.TRUE;
+	}
+
 	private String buildRuleFileName(int ruleId) {
 		return new StringBuilder(RULE_FILE_NAME_BASE).append(ruleId).toString();
 	}
 
-	private List<String> getAgendaGroups(Map<String, Boolean> agendaGroupsMap) {
-		List<String> agendaGroups = new ArrayList<String>();
-		if (MapUtils.isNotEmpty(agendaGroupsMap)) {
-			for (Map.Entry<String, Boolean> agendaGroupEntry : agendaGroupsMap
-					.entrySet()) {
-				String agendaGroupKey = agendaGroupEntry.getKey();
-				if (StringUtils.isNotBlank(agendaGroupEntry.getKey())) {
-					agendaGroups.add(agendaGroupKey);
-				}
+	private List<String> getCustomAgendaGroups(String context,
+			String customerId) {
+		List<String> customAgendaGroups = new ArrayList<String>();
+		if (StringUtils.isNotBlank(context)
+				|| StringUtils.isNotBlank(customerId)) {
+			Iterator<RuleMeta> ruleMetaIterator = null;
+			if (StringUtils.isBlank(context)) {
+				ruleMetaIterator = ruleBase
+						.getAllActiveRuleMetaFilterByCustomerId(customerId);
+			}
+			else if (StringUtils.isBlank(customerId)) {
+				ruleMetaIterator = ruleBase
+						.getAllActiveRuleMetaFilterByContext(context);
+			}
+			else {
+				ruleMetaIterator = ruleBase
+						.getAllActiveRuleMetaFilterByContextAndCustomerId(
+								context, customerId);
+			}
+
+			while (ruleMetaIterator.hasNext()) {
+				customAgendaGroups.add(ruleMetaIterator.next().getGroupName());
 			}
 		}
-		return agendaGroups;
+
+		return customAgendaGroups;
 	}
 
 	private synchronized void buildKnowledgeBase() {
@@ -66,7 +89,7 @@ public class KnowledgebaseManagerImpl
 		while (rulesIterator.hasNext()) {
 			Rule rule = rulesIterator.next();
 			platformService.addknowledge(buildRuleFileName(rule.getRuleId()),
-					rule.getRuleBlob());
+					rule.getRuleText());
 		}
 		platformService.buildKnowledgeBase(DEFAULT_KIE_PROPERTIES);
 	}
@@ -78,17 +101,21 @@ public class KnowledgebaseManagerImpl
 		isKnowledgeBaseReady = Boolean.TRUE;
 	}
 
-	public void executeRules(Object factSet,
-			Map<String, Boolean> agendaGroupsMap,
-			Map<String, Object> globalParamsMap) {
+	public void executeRules(Object factSet, List<String> agendaGroups,
+			Map<String, Object> globalParamsMap, String context,
+			String customerId) {
 		Preconditions.checkNotNull(factSet,
 				ErrorConstants.NULL_FACT_ERROR_MESSAGE);
 
 		Preconditions.checkArgument(isKnowledgeBaseReady,
 				ErrorConstants.KNOWLEDGE_BASE_NOT_READY_MESSAGE);
 
-		List<String> agendaGroups = getAgendaGroups(agendaGroupsMap);
-		platformService.runRulesOnSatefullSession(factSet, agendaGroups,
+		if (CollectionUtils.isEmpty(agendaGroups)) {
+			agendaGroups = new ArrayList<String>();
+		}
+		List<String> allAgendaGroups = new ArrayList<String>(agendaGroups);
+		allAgendaGroups.addAll(getCustomAgendaGroups(context, customerId));
+		platformService.runRulesOnSatefullSession(factSet, allAgendaGroups,
 				globalParamsMap);
 	}
 }

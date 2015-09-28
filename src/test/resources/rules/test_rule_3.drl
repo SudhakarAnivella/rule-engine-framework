@@ -1,0 +1,8 @@
+import java.util.Map;
+
+rule "test_rule_3"
+agenda-group "ag3"
+when
+then
+	System.out.println("test_rule_3 Matched ");
+end

@@ -22,6 +22,7 @@ public class ValidatorImpl implements Validator {
 		Preconditions.checkNotNull(factRecord,
 				ErrorConstants.NULL_FACT_RECORD_MESSAGE);
 		kBaseManager.executeRules(factRecord.getFactSet(),
-				factRecord.getAgendaGroups(), factRecord.getGlobalParamsMap());
+				factRecord.getAgendaGroups(), factRecord.getGlobalParamsMap(),
+				factRecord.getContext(), factRecord.getCustomerId());
 	}
 }

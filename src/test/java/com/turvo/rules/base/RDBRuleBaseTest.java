@@ -6,11 +6,11 @@ import java.util.Iterator;
 import java.util.Properties;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.turvo.rules.base.config.DatastoreConfig;
 import com.turvo.rules.model.Rule;
+import com.turvo.rules.model.RuleMeta;
 
 public class RDBRuleBaseTest {
 
@@ -18,9 +18,17 @@ public class RDBRuleBaseTest {
 
 	private Rule TEST_RULE;
 
+	private RuleMeta TEST_RULE_META;
+
 	private String TEST_RULE_NAME = "TEST_RULE";
 
-	private byte[] TEST_RULE_BLOB = { 12, 13, 14, 15 };
+	private String TEST_CUSTOMER_ID = "test_customer_id";
+
+	private String TEST_CONTEXT = "test_context";
+
+	private String TEST_GROUP_NAME = "test_group_name";
+
+	private byte[] TEST_RULE_TEXT = { 12, 13, 14, 15 };
 
 	@Before
 	public void setup() {
@@ -46,11 +54,16 @@ public class RDBRuleBaseTest {
 	private void setUpTestData() {
 		TEST_RULE = new Rule();
 		TEST_RULE.setRuleName(TEST_RULE_NAME);
-		TEST_RULE.setRuleBlob(TEST_RULE_BLOB);
+		TEST_RULE.setRuleText(TEST_RULE_TEXT);
+
+		TEST_RULE_META = new RuleMeta();
+		TEST_RULE_META.setGroupName(TEST_GROUP_NAME);
+		TEST_RULE_META.setCustomerId(TEST_CUSTOMER_ID);
+		TEST_RULE_META.setContext(TEST_CONTEXT);
+		TEST_RULE_META.setActive(true);
 	}
 
 	@Test
-	@Ignore
 	public void testPersistRule() {
 		Rule rule = testRuleBase.persistRule(TEST_RULE);
 		assertNotNull("rule must not be null", rule);
@@ -58,11 +71,10 @@ public class RDBRuleBaseTest {
 				rule.getRuleName().equals(TEST_RULE_NAME));
 
 		assertTrue("rule_blob must match",
-				rule.getRuleBlob().equals(TEST_RULE_BLOB));
+				rule.getRuleText().equals(TEST_RULE_TEXT));
 	}
 
 	@Test
-	@Ignore
 	public void testUpdateRule() {
 		Rule origianalRule = testRuleBase.persistRule(TEST_RULE);
 		origianalRule.setRuleName("UPDATED_RULE_NAME");
@@ -77,12 +89,12 @@ public class RDBRuleBaseTest {
 	public void testGetAllRules() {
 		Rule rule1 = new Rule();
 		rule1.setRuleName("r1");
-		rule1.setRuleBlob(TEST_RULE_BLOB);
-		
+		rule1.setRuleText(TEST_RULE_TEXT);
+
 		Rule rule2 = new Rule();
 		rule2.setRuleName("r2");
-		rule2.setRuleBlob(TEST_RULE_BLOB);
-		
+		rule2.setRuleText(TEST_RULE_TEXT);
+
 		rule1 = testRuleBase.persistRule(rule1);
 		rule2 = testRuleBase.persistRule(rule2);
 
@@ -91,5 +103,85 @@ public class RDBRuleBaseTest {
 
 		assertTrue("Rule match error", ruleIteror.next().equals(rule1));
 		assertTrue("Rule match error", ruleIteror.next().equals(rule2));
+	}
+
+	@Test
+	public void testPersistRuleMeta() {
+		RuleMeta ruleMeta = testRuleBase.persistRuleMeta(TEST_RULE_META);
+
+		assertNotNull("ruleMeta must not be null", ruleMeta);
+		assertTrue("rule_name must match",
+				ruleMeta.getGroupName().equals(TEST_GROUP_NAME));
+		assertTrue("rule_context must match",
+				ruleMeta.getContext().equals(TEST_CONTEXT));
+		assertTrue("rule_customerId must match",
+				ruleMeta.getCustomerId().equals(TEST_CUSTOMER_ID));
+	}
+
+	@Test
+	public void testGetAllActiveRulesByContext() {
+		RuleMeta rm1 = new RuleMeta(TEST_CUSTOMER_ID, TEST_CONTEXT,
+				TEST_GROUP_NAME, true);
+		RuleMeta rm2 = new RuleMeta(TEST_CUSTOMER_ID, "",
+				TEST_GROUP_NAME + "_new", true);
+
+		RuleMeta dbRm1 = testRuleBase.persistRuleMeta(rm1);
+		RuleMeta dbRm2 = testRuleBase.persistRuleMeta(rm2);
+
+		assertNotNull(dbRm1);
+		assertNotNull(dbRm2);
+
+		Iterator<RuleMeta> ruleMetaIterator = testRuleBase
+				.getAllActiveRuleMetaFilterByContext(TEST_CONTEXT);
+		assertNotNull("ruleMetaIterator must not be null", ruleMetaIterator);
+		assertTrue("rule-meta must match rm1",
+				ruleMetaIterator.next().getGroupName().equals(TEST_GROUP_NAME));
+		assertFalse("only one rule-meta must be returned",
+				ruleMetaIterator.hasNext());
+	}
+
+	@Test
+	public void testGetAllActiveRulesByCustomerId() {
+		RuleMeta rm1 = new RuleMeta(TEST_CUSTOMER_ID, TEST_CONTEXT,
+				TEST_GROUP_NAME, true);
+		RuleMeta rm2 = new RuleMeta("", TEST_CONTEXT, TEST_GROUP_NAME + "_new",
+				true);
+
+		RuleMeta dbRm1 = testRuleBase.persistRuleMeta(rm1);
+		RuleMeta dbRm2 = testRuleBase.persistRuleMeta(rm2);
+
+		assertNotNull(dbRm1);
+		assertNotNull(dbRm2);
+
+		Iterator<RuleMeta> ruleMetaIterator = testRuleBase
+				.getAllActiveRuleMetaFilterByCustomerId(TEST_CUSTOMER_ID);
+		assertNotNull("ruleMetaIterator must not be null", ruleMetaIterator);
+		assertTrue("rule-meta must match rm1",
+				ruleMetaIterator.next().getGroupName().equals(TEST_GROUP_NAME));
+		assertFalse("only one rule-meta must be returned",
+				ruleMetaIterator.hasNext());
+	}
+
+	@Test
+	public void testGetAllActiveRulesByCustomerIdAndContext() {
+		RuleMeta rm1 = new RuleMeta(TEST_CUSTOMER_ID, TEST_CONTEXT,
+				TEST_GROUP_NAME, true);
+		RuleMeta rm2 = new RuleMeta("", TEST_CONTEXT, TEST_GROUP_NAME + "_new",
+				true);
+
+		RuleMeta dbRm1 = testRuleBase.persistRuleMeta(rm1);
+		RuleMeta dbRm2 = testRuleBase.persistRuleMeta(rm2);
+
+		assertNotNull(dbRm1);
+		assertNotNull(dbRm2);
+
+		Iterator<RuleMeta> ruleMetaIterator = testRuleBase
+				.getAllActiveRuleMetaFilterByContextAndCustomerId(TEST_CONTEXT,
+						TEST_CUSTOMER_ID);
+		assertNotNull("ruleMetaIterator must not be null", ruleMetaIterator);
+		assertTrue("rule-meta must match rm1",
+				ruleMetaIterator.next().getGroupName().equals(TEST_GROUP_NAME));
+		assertFalse("only one rule-meta must be returned",
+				ruleMetaIterator.hasNext());
 	}
 }

@@ -1,0 +1,11 @@
+import java.util.Map;
+
+global java.util.List errors
+
+rule "Validate Person with Employee"
+agenda-group "ag2"
+when
+then
+	errors.add("Error in Validate Person with Employee ");
+	System.out.println("new rule  Matched ");
+end

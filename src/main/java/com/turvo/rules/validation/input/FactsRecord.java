@@ -1,11 +1,16 @@
 package com.turvo.rules.validation.input;
 
+import java.util.List;
 import java.util.Map;
 
 public class FactsRecord {
 	private Object factSet;
 
-	private Map<String, Boolean> agendaGroups;
+	private List<String> agendaGroups;
+
+	private String context;
+
+	private String customerId;
 
 	private Map<String, Object> globalParamsMap;
 
@@ -17,14 +22,6 @@ public class FactsRecord {
 		this.factSet = factSet;
 	}
 
-	public Map<String, Boolean> getAgendaGroups() {
-		return agendaGroups;
-	}
-
-	public void setAgendaGroups(Map<String, Boolean> agendaGroups) {
-		this.agendaGroups = agendaGroups;
-	}
-
 	public Map<String, Object> getGlobalParamsMap() {
 		return globalParamsMap;
 	}
@@ -32,4 +29,29 @@ public class FactsRecord {
 	public void setGlobalParamsMap(Map<String, Object> globalParamsMap) {
 		this.globalParamsMap = globalParamsMap;
 	}
+
+	public List<String> getAgendaGroups() {
+		return agendaGroups;
+	}
+
+	public void setAgendaGroups(List<String> agendaGroups) {
+		this.agendaGroups = agendaGroups;
+	}
+
+	public String getContext() {
+		return context;
+	}
+
+	public void setContext(String context) {
+		this.context = context;
+	}
+
+	public String getCustomerId() {
+		return customerId;
+	}
+
+	public void setCustomerId(String customerId) {
+		this.customerId = customerId;
+	}
+
 }

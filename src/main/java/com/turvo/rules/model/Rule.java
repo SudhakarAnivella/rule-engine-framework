@@ -1,7 +1,5 @@
 package com.turvo.rules.model;
 
-import java.util.Arrays;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -13,15 +11,18 @@ import javax.persistence.Table;
 @Entity(name = "rules")
 public class Rule {
 	@Id
-	@Column(name = "rule_id")
+	@Column(name = "id")
 	@GeneratedValue(strategy = GenerationType.TABLE)
 	private int ruleId;
 
-	@Column(name = "rule_name", unique = true)
+	@Column(name = "name", unique = true)
 	private String ruleName;
 
-	@Column(name = "rule_blob")
-	private byte[] ruleBlob;
+	@Column(name = "rule_text")
+	private byte[] ruleText;
+
+	@Column(name = "active")
+	private boolean active;
 
 	public int getRuleId() {
 		return ruleId;
@@ -39,18 +40,19 @@ public class Rule {
 		this.ruleName = ruleName;
 	}
 
-	public byte[] getRuleBlob() {
-		return ruleBlob;
+	public byte[] getRuleText() {
+		return ruleText;
 	}
 
-	public void setRuleBlob(byte[] ruleBlob) {
-		this.ruleBlob = ruleBlob;
+	public void setRuleText(byte[] ruleText) {
+		this.ruleText = ruleText;
 	}
 
-	@Override
-	public String toString() {
-		return "Rule [ruleId=" + ruleId + ", ruleName=" + ruleName
-				+ ", ruleBlob=" + Arrays.toString(ruleBlob) + "]";
+	public boolean isActive() {
+		return active;
 	}
 
+	public void setActive(boolean active) {
+		this.active = active;
+	}
 }
