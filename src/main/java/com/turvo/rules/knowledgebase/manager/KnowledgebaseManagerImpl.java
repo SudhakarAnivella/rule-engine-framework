@@ -8,6 +8,8 @@ import java.util.Properties;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.turvo.rules.base.RDBRuleBase;
@@ -20,6 +22,9 @@ import com.turvo.rules.model.Rule;
 import com.turvo.rules.model.RuleMeta;
 
 public class KnowledgebaseManagerImpl implements KnowledgeBaseManagerInternal {
+	private final Logger LOGGER = LoggerFactory
+			.getLogger(KnowledgebaseManager.class);
+
 	private RuleBase ruleBase;
 
 	private CorePlatformService platformService;
@@ -35,6 +40,8 @@ public class KnowledgebaseManagerImpl implements KnowledgeBaseManagerInternal {
 		this.platformService = new DroolsService();
 		buildKnowledgeBase();
 		isKnowledgeBaseReady = Boolean.TRUE;
+		LOGGER.info(
+				"Knowlodge base has been initialized successfully... Ready for war....");
 	}
 
 	public KnowledgebaseManagerImpl(RuleBase ruleBase) {
@@ -44,6 +51,12 @@ public class KnowledgebaseManagerImpl implements KnowledgeBaseManagerInternal {
 		this.ruleBase = ruleBase;
 		buildKnowledgeBase();
 		isKnowledgeBaseReady = Boolean.TRUE;
+		LOGGER.info(
+				"Knowlodge base has been initialized successfully with rulebase... Ready for war....");
+	}
+
+	@SuppressWarnings("unused")
+	private KnowledgebaseManagerImpl() {
 	}
 
 	private String buildRuleFileName(int ruleId) {
@@ -92,10 +105,11 @@ public class KnowledgebaseManagerImpl implements KnowledgeBaseManagerInternal {
 					rule.getRuleText());
 		}
 		platformService.buildKnowledgeBase(DEFAULT_KIE_PROPERTIES);
+		LOGGER.info("Knowledgebase built sucessfully by drools..!!!");
 	}
 
-	// TODO Need to give more thought
-	public void rebuildKnowledgeBase() {
+	public synchronized void rebuildKnowledgeBase() {
+		LOGGER.info("Rebuilding knowledgebase...!!!");
 		isKnowledgeBaseReady = Boolean.FALSE;
 		buildKnowledgeBase();
 		isKnowledgeBaseReady = Boolean.TRUE;
@@ -117,5 +131,9 @@ public class KnowledgebaseManagerImpl implements KnowledgeBaseManagerInternal {
 		allAgendaGroups.addAll(getCustomAgendaGroups(context, customerId));
 		platformService.runRulesOnSatefullSession(factSet, allAgendaGroups,
 				globalParamsMap);
+	}
+
+	public boolean isKnowldgeBaseReady() {
+		return isKnowledgeBaseReady;
 	}
 }

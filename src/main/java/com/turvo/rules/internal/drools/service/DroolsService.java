@@ -20,11 +20,15 @@ import org.kie.api.runtime.KieContainer;
 import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.KieSessionConfiguration;
 import org.kie.internal.io.ResourceFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.turvo.rules.misc.ErrorConstants;
 
 public class DroolsService implements CorePlatformService {
+	private final Logger LOGGER = LoggerFactory.getLogger(DroolsService.class);
+
 	private final static String KIE_FILE_SYSTEM_BASE_DIR = "/kie/data/";
 
 	private final static String KIE_FILE_NAME_EXT = ".drl";
@@ -35,7 +39,7 @@ public class DroolsService implements CorePlatformService {
 
 	private KieFileSystem kieFileSystem = services.newKieFileSystem();
 
-	private KieBase kieBase; 
+	private KieBase kieBase;
 
 	private KieSessionConfiguration kieSessionConfiguration = services
 			.newKieSessionConfiguration();
@@ -85,8 +89,9 @@ public class DroolsService implements CorePlatformService {
 		KieBuilder kieBuilder = services.newKieBuilder(kieFileSystem);
 		kieBuilder.buildAll();
 		if (kieBuilder.getResults().hasMessages(Level.ERROR)) {
-			// TODO LOG RESULTS
-			System.out.println(kieBuilder.getResults());
+			LOGGER.error(
+					"Knowldgebase has errors, cannot proceed further..!!!");
+			LOGGER.error(kieBuilder.getResults().toString());
 			throw new RuntimeException("Unable to build knowledgebase");
 		}
 

@@ -22,4 +22,6 @@ public class ErrorConstants {
 	public final static String NO_CORE_SERVICE_MESSAGE = "core-service is undefined, please initalize knowledgebaseManager";
 
 	public final static String KNOWLEDGE_BASE_NOT_READY_MESSAGE = "knowledge-base is not initialized yet";
+	
+	public final static String NULL_KNOWLEDGE_BASE_MESSAGE = "knowledge-base must not be null";
 }

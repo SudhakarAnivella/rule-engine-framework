@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,7 +57,6 @@ public class ValidateTest {
 						.get(ClassLoader.getSystemResource(fileName).toURI());
 			}
 			catch (URISyntaxException e1) {
-				e1.printStackTrace();
 			}
 			Rule r = new Rule();
 			r.setActive(true);
@@ -65,7 +65,6 @@ public class ValidateTest {
 				r.setRuleText(Files.readAllBytes(path));
 			}
 			catch (IOException e) {
-				// TODO LOG error
 			}
 			rules.add(r);
 			++i;
@@ -92,9 +91,9 @@ public class ValidateTest {
 		statusMap.put("note", "");
 		topMap.put("status", statusMap);
 		fr.setFactSet(topMap);
-		// fr.setAgendaGroups(Arrays.asList("ag2", "ag1"));
+		fr.setAgendaGroups(Arrays.asList("ag2", "ag1"));
 		fr.setContext("t3");
-		//fr.setCustomerId("test_customer");
+		fr.setCustomerId("test_customer");
 		List<String> errors = new ArrayList<String>();
 		Map<String, Object> globalParams = new HashMap<String, Object>();
 		globalParams.put("errors", errors);

@@ -10,6 +10,8 @@ import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.turvo.rules.base.config.DatastoreConfig;
@@ -19,6 +21,8 @@ import com.turvo.rules.model.Rule;
 import com.turvo.rules.model.RuleMeta;
 
 public class RDBRuleBase implements RuleBase {
+	private final Logger LOGGER = LoggerFactory.getLogger(RDBRuleBase.class);
+
 	private EntityManager entityManager;
 
 	private RDBPropertiesProvider propertiesProvider;
@@ -31,6 +35,7 @@ public class RDBRuleBase implements RuleBase {
 								.buildDataStoreProperties(dataStoreConfig)
 								.getProperties());
 		entityManager = emf.createEntityManager();
+		LOGGER.info("RDB RuleBase has been initiated sucessfully...!!!");
 	}
 
 	public RDBRuleBase(DatastoreConfig dataStoreConfig, Properties properties) {
@@ -40,6 +45,7 @@ public class RDBRuleBase implements RuleBase {
 				propertiesProvider.buildDataStoreProperties(dataStoreConfig)
 						.buildMiscProperties(properties).getProperties());
 		entityManager = emf.createEntityManager();
+		LOGGER.info("RDB RuleBase has been initiated sucessfully...!!!");
 	}
 
 	private void rollBackTransactionIfOpen(EntityTransaction transaction) {
