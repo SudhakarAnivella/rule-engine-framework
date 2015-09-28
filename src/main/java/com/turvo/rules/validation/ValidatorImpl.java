@@ -2,7 +2,7 @@ package com.turvo.rules.validation;
 
 import com.google.common.base.Preconditions;
 import com.turvo.rules.knowledgebase.manager.KnowledgeBaseManagerInternal;
-import com.turvo.rules.knowledgebase.manager.KnowledgebaseManagerImpl;
+import com.turvo.rules.knowledgebase.manager.KnowledgebaseManager;
 import com.turvo.rules.misc.ErrorConstants;
 import com.turvo.rules.validation.input.FactsRecord;
 
@@ -10,8 +10,8 @@ public class ValidatorImpl implements Validator {
 
 	private KnowledgeBaseManagerInternal kBaseManager;
 
-	public ValidatorImpl(KnowledgebaseManagerImpl kBaseManager) {
-		this.kBaseManager = kBaseManager;
+	public ValidatorImpl(KnowledgebaseManager kBaseManager) {
+		this.kBaseManager = (KnowledgeBaseManagerInternal) kBaseManager;
 	}
 
 	@SuppressWarnings("unused")

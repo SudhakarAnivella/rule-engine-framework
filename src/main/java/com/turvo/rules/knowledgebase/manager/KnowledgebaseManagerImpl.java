@@ -19,7 +19,7 @@ import com.turvo.rules.misc.ErrorConstants;
 import com.turvo.rules.model.Rule;
 
 public class KnowledgebaseManagerImpl
-		implements KnowledgeBaseManagerInternal, KnowledgebaseManager {
+		implements KnowledgeBaseManagerInternal {
 	private RuleBase ruleBase;
 
 	private CorePlatformService platformService;
