@@ -1,4 +1,4 @@
-# rule-engine-framework
+# RULES ENGINE FRAMEWORK (DROOLS UNDERLYING)
 
 Documentation
 -------------
@@ -54,7 +54,7 @@ Step #2
 Make RuleEngine a single-ton instance.
 
 Step #3 (Build Valaidator using RuleEngine as base)
-Validator v = new ValidatorImpl(re);
+Validator v = new DroolsValidator(re);
 
 Step #4
 Make Validator a single-ton instance.
