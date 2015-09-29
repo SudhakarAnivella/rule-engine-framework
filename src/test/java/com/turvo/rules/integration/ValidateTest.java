@@ -18,12 +18,12 @@ import org.junit.Test;
 import com.turvo.rules.base.RDBRuleBase;
 import com.turvo.rules.base.RuleBase;
 import com.turvo.rules.base.config.DatastoreConfig;
-import com.turvo.rules.knowledgebase.manager.KnowledgebaseManager;
-import com.turvo.rules.knowledgebase.manager.KnowledgebaseManagerImpl;
+import com.turvo.rules.engine.DroolsRuleEngine;
+import com.turvo.rules.engine.RuleEngine;
 import com.turvo.rules.model.Rule;
 import com.turvo.rules.model.RuleMeta;
+import com.turvo.rules.validation.DroolsValidator;
 import com.turvo.rules.validation.Validator;
-import com.turvo.rules.validation.ValidatorImpl;
 import com.turvo.rules.validation.input.FactsRecord;
 
 public class ValidateTest {
@@ -64,8 +64,9 @@ public class ValidateTest {
 			++i;
 			testRuleBase.persistRule(r);
 		}
-		KnowledgebaseManager km = new KnowledgebaseManagerImpl(testRuleBase);
-		v = new ValidatorImpl(km);
+		RuleEngine re = new DroolsRuleEngine(config);
+		re.gearUp();
+		v = new DroolsValidator(re);
 
 		RuleMeta rm1 = new RuleMeta("test_customer", "t3", "ag3", true);
 		testRuleBase.persistRuleMeta(rm1);

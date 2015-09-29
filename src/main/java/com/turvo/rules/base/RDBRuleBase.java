@@ -118,7 +118,7 @@ public class RDBRuleBase implements RuleBase {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Iterator<Rule> getAllActiveRules() {
+	public Iterator<Rule> fetchAllActiveRules() {
 		List<Rule> rules = (List<Rule>) entityManager.createQuery(SqlConstants.GET_ALL_ACTIVE_RULES_SQL)
 				.getResultList();
 
@@ -126,7 +126,7 @@ public class RDBRuleBase implements RuleBase {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Iterator<RuleMeta> getAllActiveRuleMetaFilterByContextAndCustomerId(String context, String customerId) {
+	public Iterator<RuleMeta> fetchAllActiveRuleMetaFilterByContextAndCustomerId(String context, String customerId) {
 		Preconditions.checkArgument(StringUtils.isNotBlank(context), ErrorConstants.NULL_CONTEXT_MESSAGE);
 		Preconditions.checkArgument(StringUtils.isNotBlank(customerId), ErrorConstants.NULL_CUSTOMER_ID_MESSAGE);
 		List<RuleMeta> ruleMetaData = (List<RuleMeta>) entityManager
@@ -137,7 +137,7 @@ public class RDBRuleBase implements RuleBase {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Iterator<RuleMeta> getAllActiveRuleMetaFilterByContext(String context) {
+	public Iterator<RuleMeta> fetchAllActiveRuleMetaFilterByContext(String context) {
 		Preconditions.checkArgument(StringUtils.isNotBlank(context), ErrorConstants.NULL_CONTEXT_MESSAGE);
 		List<RuleMeta> ruleMetaData = (List<RuleMeta>) entityManager
 				.createQuery(SqlConstants.GET_ALL_ACTIVE_META_INFO_FILTER_BY_CONTEXT_SQL)
@@ -146,7 +146,7 @@ public class RDBRuleBase implements RuleBase {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Iterator<RuleMeta> getAllActiveRuleMetaFilterByCustomerId(String customerId) {
+	public Iterator<RuleMeta> fetchAllActiveRuleMetaFilterByCustomerId(String customerId) {
 		Preconditions.checkArgument(StringUtils.isNotBlank(customerId), ErrorConstants.NULL_CUSTOMER_ID_MESSAGE);
 		List<RuleMeta> ruleMetaData = (List<RuleMeta>) entityManager
 				.createQuery(SqlConstants.GET_ALL_ACTIVE_META_INFO_FILTER_BY_CUSTID_SQL)

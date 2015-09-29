@@ -1,30 +1,35 @@
 package com.turvo.rules.knowledgebase.manager;
 
+import java.util.Iterator;
+
+import com.turvo.rules.knowledgebase.model.KnowledgeContent;
+
 /**
  * 
  * @author krishna
  *
- * Class responsible for managing Knowledge base.. i.e it
- * builds/manages/rebuilds if instructed..
+ *         Class responsible for managing Knowledge base.. i.e it
  * 
- * Please make sure we have only one active instance of knowledge-base manager.
- * This serves as input to Validator/Executor
- *
+ *         Please make sure we have only one active instance of knowledge-base
+ *         manager.
  */
 public interface KnowledgebaseManager {
 	/**
-	 * Rebuilds the Knowledge-base from data-base... Use with JMX extension to
-	 * accommodate changes made to rules DB.
+	 * Gets all Active knowledge from the underlying data-store
 	 * 
-	 * Please note that we get exception if we try to execute rules while we
-	 * rebuild knowledge-base
+	 * @return Iterator to the knowledge content fetched from data-store.
 	 */
-	void rebuildKnowledgeBase();
+	Iterator<KnowledgeContent> getAllActiveKnowledge();
 
 	/**
-	 * Helper function to indicate if the knowledge-base is ready for execution
+	 * Gets All active Agenda-groups for given customerId and/or context. if
+	 * either customerId or context is null, the other param is used for fetch.
 	 * 
-	 * @return true if knowledge-base is ready. false else case
+	 * @param customerId
+	 *            id of the customer
+	 * @param context
+	 *            the context in which the rules are executed.
+	 * @return
 	 */
-	boolean isKnowldgeBaseReady();
+	Iterator<String> getAllActiveAgendaGroupsByCustIdAndContext(String customerId, String context);
 }

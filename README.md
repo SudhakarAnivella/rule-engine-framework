@@ -19,39 +19,42 @@ Third party libraries
 ---------------------
 
 Drools, Hibernate, Apache-lang, Apache-collections, guava from google,
-slf4j for logging, hsql and juint for testing.
+slf4j for logging, hsql and juint, mockito for testing.
 
 Code design
 -----------
 
-There are 3 primary components:
+There are 4 primary components:
 (a) RuleBase ... Used for persistence of rules.
 (b) KnowledgebaseManager... Manages the knowledge(bunch of rules) of the system.
 (c) PlatformService... Responsible for building and execution of rules.
+(d) RuleEngine... This holds the context togather.. one can do gearUp
+and tearDown opeartions on it.
 
 And on top the these are the 2 client facing components.
 (a) Validator.
 (b) RulesExecutor.
 
 Both perform same job execpt that they are different semantically.
-Both take KnowledgeBaseManager as base.
+Both take RuleEngine as base.
 
-It is recomended for users to build KnowledgeManager once and provide
+It is recomended for users to build RuleEngine once and provide
 the same instance to validator and RulesExecutor.
 
 Usage patterns
 --------------
 
-Step #1 (Build knowledgebase)
+Step #1 (Build RuleEngine and bring-it-up)
 //dataStoreConfig is the basic properties required to connect to a
 //database (dbUrl,  username, password... etc).
-KnowledgebaseManager km = new KnowledgebaseManagerImpl(dataStoreConfig);
+RuleEngine re = new DroolsRuleEngine(dataStoreConfig);
+re.gearUp();
 
 Step #2
-Make KnowledgeBase a single-ton instance.
+Make RuleEngine a single-ton instance.
 
-Step #3 (Build Valaidator using KnowledgebaseManager as base)
-Validator v = new ValidatorImpl(v);
+Step #3 (Build Valaidator using RuleEngine as base)
+Validator v = new ValidatorImpl(re);
 
 Step #4
 Make Validator a single-ton instance.
@@ -121,4 +124,3 @@ These will be executed once for every run of validate/executerules.
 Please make sure you comment/fix if you find something messy.
 
 Take care and enjoy the ride with rules-engine-framework...!!!
-

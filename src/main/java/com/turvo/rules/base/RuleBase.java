@@ -14,13 +14,13 @@ public interface RuleBase {
 
 	Rule updateRule(Rule rule);
 
-	Iterator<Rule> getAllActiveRules();
+	Iterator<Rule> fetchAllActiveRules();
 
-	Iterator<RuleMeta> getAllActiveRuleMetaFilterByContextAndCustomerId(
+	Iterator<RuleMeta> fetchAllActiveRuleMetaFilterByContextAndCustomerId(
 			String context, String customerId);
 
-	Iterator<RuleMeta> getAllActiveRuleMetaFilterByContext(String context);
+	Iterator<RuleMeta> fetchAllActiveRuleMetaFilterByContext(String context);
 
-	Iterator<RuleMeta> getAllActiveRuleMetaFilterByCustomerId(
+	Iterator<RuleMeta> fetchAllActiveRuleMetaFilterByCustomerId(
 			String customerId);
 }

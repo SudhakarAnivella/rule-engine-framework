@@ -1,4 +1,4 @@
-package com.turvo.rules.internal.drools.service;
+package com.turvo.rules.platform.service;
 
 import java.util.List;
 import java.util.Map;
@@ -33,6 +33,8 @@ public class DroolsService implements CorePlatformService {
 
 	private final static String KIE_FILE_NAME_EXT = ".drl";
 
+	private final String RULE_FILE_NAME_BASE = "rule_";
+
 	private static KieServices services = KieServices.Factory.get();
 
 	private KieFileSystem kieFileSystem = services.newKieFileSystem();
@@ -48,6 +50,10 @@ public class DroolsService implements CorePlatformService {
 
 	private boolean isKnowledgeAvailable() {
 		return kieBase != null;
+	}
+
+	private String buildRuleFileName(String ruleId) {
+		return new StringBuilder(RULE_FILE_NAME_BASE).append(ruleId).toString();
 	}
 
 	private void bindGlobals(KieSession kieSession, Map<String, Object> globalParamsMap) {
@@ -69,13 +75,15 @@ public class DroolsService implements CorePlatformService {
 		}
 	}
 
-	public void addknowledge(String memoryFileName, byte[] ruleContent) {
+	public void addknowledge(String contentId, byte[] ruleContent) {
+		Preconditions.checkArgument(StringUtils.isNotBlank(contentId), ErrorConstants.BLANK_CONTENT_ID_MESSAGE);
+		Preconditions.checkNotNull(ruleContent, ErrorConstants.NULL_CONTENT_MESSAGE);
 		Resource byteArrayResource = ResourceFactory.newByteArrayResource(ruleContent);
-		byteArrayResource.setSourcePath(getSourcePath(memoryFileName));
+		byteArrayResource.setSourcePath(getSourcePath(buildRuleFileName(contentId)));
 		kieFileSystem.write(byteArrayResource);
 	}
 
-	public void buildKnowledgeBase(Properties knowledgeBaseProperties) {
+	public void initPlatform(Properties knowledgeBaseProperties) {
 		KieBuilder kieBuilder = services.newKieBuilder(kieFileSystem);
 		kieBuilder.buildAll();
 		if (kieBuilder.getResults().hasMessages(Level.ERROR)) {
@@ -116,5 +124,9 @@ public class DroolsService implements CorePlatformService {
 		} finally {
 			kieSession.dispose();
 		}
+	}
+
+	public void shutdownPlatform() {
+		this.kieBase = null;
 	}
 }
