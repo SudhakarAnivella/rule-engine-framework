@@ -17,6 +17,7 @@ import com.google.common.base.Preconditions;
 import com.turvo.rules.base.config.DatastoreConfig;
 import com.turvo.rules.misc.ErrorConstants;
 import com.turvo.rules.misc.RuleConstants;
+import com.turvo.rules.misc.SqlConstants;
 import com.turvo.rules.model.Rule;
 import com.turvo.rules.model.RuleMeta;
 
@@ -29,21 +30,17 @@ public class RDBRuleBase implements RuleBase {
 
 	public RDBRuleBase(DatastoreConfig dataStoreConfig) {
 		propertiesProvider = new RDBPropertiesProvider();
-		EntityManagerFactory emf = Persistence
-				.createEntityManagerFactory(RuleConstants.RULES_PERSISTENT_UNIT,
-						propertiesProvider
-								.buildDataStoreProperties(dataStoreConfig)
-								.getProperties());
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory(RuleConstants.RULES_PERSISTENT_UNIT,
+				propertiesProvider.buildDataStoreProperties(dataStoreConfig).getProperties());
 		entityManager = emf.createEntityManager();
 		LOGGER.info("RDB RuleBase has been initiated sucessfully...!!!");
 	}
 
 	public RDBRuleBase(DatastoreConfig dataStoreConfig, Properties properties) {
 		propertiesProvider = new RDBPropertiesProvider();
-		EntityManagerFactory emf = Persistence.createEntityManagerFactory(
-				RuleConstants.RULES_PERSISTENT_UNIT,
-				propertiesProvider.buildDataStoreProperties(dataStoreConfig)
-						.buildMiscProperties(properties).getProperties());
+		EntityManagerFactory emf = Persistence.createEntityManagerFactory(RuleConstants.RULES_PERSISTENT_UNIT,
+				propertiesProvider.buildDataStoreProperties(dataStoreConfig).buildMiscProperties(properties)
+						.getProperties());
 		entityManager = emf.createEntityManager();
 		LOGGER.info("RDB RuleBase has been initiated sucessfully...!!!");
 	}
@@ -61,33 +58,27 @@ public class RDBRuleBase implements RuleBase {
 	}
 
 	public Rule persistRule(Rule rule) {
-		Preconditions.checkNotNull(rule,
-				ErrorConstants.NULL_RULE_ERROR_MESSAGE);
+		Preconditions.checkNotNull(rule, ErrorConstants.NULL_RULE_ERROR_MESSAGE);
 
-		EntityTransaction rulePersistTransaction = entityManager
-				.getTransaction();
+		EntityTransaction rulePersistTransaction = entityManager.getTransaction();
 		rulePersistTransaction.begin();
 		try {
 			entityManager.persist(rule);
 			rulePersistTransaction.commit();
-		}
-		finally {
+		} finally {
 			rollBackTransactionIfOpen(rulePersistTransaction);
 		}
 		return rule;
 	}
 
 	public Rule updateRule(Rule rule) {
-		Preconditions.checkNotNull(rule,
-				ErrorConstants.NULL_RULE_ERROR_MESSAGE);
-		EntityTransaction ruleUpdateTransaction = entityManager
-				.getTransaction();
+		Preconditions.checkNotNull(rule, ErrorConstants.NULL_RULE_ERROR_MESSAGE);
+		EntityTransaction ruleUpdateTransaction = entityManager.getTransaction();
 		ruleUpdateTransaction.begin();
 
 		try {
 			rule = entityManager.merge(rule);
-		}
-		finally {
+		} finally {
 			rollBackTransactionIfOpen(ruleUpdateTransaction);
 		}
 
@@ -95,11 +86,9 @@ public class RDBRuleBase implements RuleBase {
 	}
 
 	public void persistRuleBatch(Iterator<Rule> ruleIterator) {
-		Preconditions.checkNotNull(ruleIterator,
-				ErrorConstants.NULL_ITERATOR_ERROR_MESSAGE);
+		Preconditions.checkNotNull(ruleIterator, ErrorConstants.NULL_ITERATOR_ERROR_MESSAGE);
 
-		EntityTransaction rulesPersistTransaction = entityManager
-				.getTransaction();
+		EntityTransaction rulesPersistTransaction = entityManager.getTransaction();
 		rulesPersistTransaction.begin();
 		try {
 			while (ruleIterator.hasNext()) {
@@ -109,24 +98,20 @@ public class RDBRuleBase implements RuleBase {
 				}
 			}
 			rulesPersistTransaction.commit();
-		}
-		finally {
+		} finally {
 			rollBackTransactionIfOpen(rulesPersistTransaction);
 		}
 	}
 
 	public RuleMeta persistRuleMeta(RuleMeta ruleMeta) {
-		Preconditions.checkNotNull(ruleMeta,
-				ErrorConstants.NULL_RULE_META_ERROR_MESSAGE);
+		Preconditions.checkNotNull(ruleMeta, ErrorConstants.NULL_RULE_META_ERROR_MESSAGE);
 
-		EntityTransaction ruleMetaPersistTransaction = entityManager
-				.getTransaction();
+		EntityTransaction ruleMetaPersistTransaction = entityManager.getTransaction();
 		ruleMetaPersistTransaction.begin();
 		try {
 			entityManager.persist(ruleMeta);
 			ruleMetaPersistTransaction.commit();
-		}
-		finally {
+		} finally {
 			rollBackTransactionIfOpen(ruleMetaPersistTransaction);
 		}
 		return ruleMeta;
@@ -134,49 +119,38 @@ public class RDBRuleBase implements RuleBase {
 
 	@SuppressWarnings("unchecked")
 	public Iterator<Rule> getAllActiveRules() {
-		List<Rule> rules = (List<Rule>) entityManager
-				.createQuery("SELECT r FROM com.turvo.rules.model.Rule r")
+		List<Rule> rules = (List<Rule>) entityManager.createQuery(SqlConstants.GET_ALL_ACTIVE_RULES_SQL)
 				.getResultList();
 
 		return rules.iterator();
 	}
 
 	@SuppressWarnings("unchecked")
-	public Iterator<RuleMeta> getAllActiveRuleMetaFilterByContextAndCustomerId(
-			String context, String customerId) {
-		Preconditions.checkArgument(StringUtils.isNotBlank(context),
-				ErrorConstants.NULL_CONTEXT_MESSAGE);
-		Preconditions.checkArgument(StringUtils.isNotBlank(customerId),
-				ErrorConstants.NULL_CUSTOMER_ID_MESSAGE);
+	public Iterator<RuleMeta> getAllActiveRuleMetaFilterByContextAndCustomerId(String context, String customerId) {
+		Preconditions.checkArgument(StringUtils.isNotBlank(context), ErrorConstants.NULL_CONTEXT_MESSAGE);
+		Preconditions.checkArgument(StringUtils.isNotBlank(customerId), ErrorConstants.NULL_CUSTOMER_ID_MESSAGE);
 		List<RuleMeta> ruleMetaData = (List<RuleMeta>) entityManager
-				.createQuery(
-						"SELECT rm FROM com.turvo.rules.model.RuleMeta rm WHERE rm.active = true AND rm.context = :context AND rm.customerId = :customerId")
-				.setParameter("context", context)
-				.setParameter("customerId", customerId).getResultList();
+				.createQuery(SqlConstants.GET_ALL_ACTIVE_META_INFO_FILTER_BY_CUSTID_CONTEXT_SQL)
+				.setParameter(SqlConstants.SQL_CONTEXT_PLACE_HOLDER, context)
+				.setParameter(SqlConstants.SQL_CUST_ID_PLACE_HOLDER, customerId).getResultList();
 		return ruleMetaData.iterator();
 	}
 
 	@SuppressWarnings("unchecked")
-	public Iterator<RuleMeta> getAllActiveRuleMetaFilterByContext(
-			String context) {
-		Preconditions.checkArgument(StringUtils.isNotBlank(context),
-				ErrorConstants.NULL_CONTEXT_MESSAGE);
+	public Iterator<RuleMeta> getAllActiveRuleMetaFilterByContext(String context) {
+		Preconditions.checkArgument(StringUtils.isNotBlank(context), ErrorConstants.NULL_CONTEXT_MESSAGE);
 		List<RuleMeta> ruleMetaData = (List<RuleMeta>) entityManager
-				.createQuery(
-						"SELECT rm FROM com.turvo.rules.model.RuleMeta rm WHERE rm.active = true AND rm.context = :context")
-				.setParameter("context", context).getResultList();
+				.createQuery(SqlConstants.GET_ALL_ACTIVE_META_INFO_FILTER_BY_CONTEXT_SQL)
+				.setParameter(SqlConstants.SQL_CONTEXT_PLACE_HOLDER, context).getResultList();
 		return ruleMetaData.iterator();
 	}
 
 	@SuppressWarnings("unchecked")
-	public Iterator<RuleMeta> getAllActiveRuleMetaFilterByCustomerId(
-			String customerId) {
-		Preconditions.checkArgument(StringUtils.isNotBlank(customerId),
-				ErrorConstants.NULL_CUSTOMER_ID_MESSAGE);
+	public Iterator<RuleMeta> getAllActiveRuleMetaFilterByCustomerId(String customerId) {
+		Preconditions.checkArgument(StringUtils.isNotBlank(customerId), ErrorConstants.NULL_CUSTOMER_ID_MESSAGE);
 		List<RuleMeta> ruleMetaData = (List<RuleMeta>) entityManager
-				.createQuery(
-						"SELECT rm FROM com.turvo.rules.model.RuleMeta rm WHERE rm.active = true AND rm.customerId = :customerId")
-				.setParameter("customerId", customerId).getResultList();
+				.createQuery(SqlConstants.GET_ALL_ACTIVE_META_INFO_FILTER_BY_CUSTID_SQL)
+				.setParameter(SqlConstants.SQL_CUST_ID_PLACE_HOLDER, customerId).getResultList();
 		return ruleMetaData.iterator();
 	}
 }

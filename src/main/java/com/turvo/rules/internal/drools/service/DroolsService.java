@@ -33,54 +33,44 @@ public class DroolsService implements CorePlatformService {
 
 	private final static String KIE_FILE_NAME_EXT = ".drl";
 
-	private final static String DEFAULT_AGENDA_GROUP = null;
-
 	private static KieServices services = KieServices.Factory.get();
 
 	private KieFileSystem kieFileSystem = services.newKieFileSystem();
 
 	private KieBase kieBase;
 
-	private KieSessionConfiguration kieSessionConfiguration = services
-			.newKieSessionConfiguration();
+	private KieSessionConfiguration kieSessionConfiguration = services.newKieSessionConfiguration();
 
 	private String getSourcePath(String memoryFileName) {
-		return new StringBuilder().append(KIE_FILE_SYSTEM_BASE_DIR)
-				.append(memoryFileName).append(KIE_FILE_NAME_EXT).toString();
+		return new StringBuilder().append(KIE_FILE_SYSTEM_BASE_DIR).append(memoryFileName).append(KIE_FILE_NAME_EXT)
+				.toString();
 	}
 
 	private boolean isKnowledgeAvailable() {
 		return kieBase != null;
 	}
 
-	private void bindGlobals(KieSession kieSession,
-			Map<String, Object> globalParamsMap) {
+	private void bindGlobals(KieSession kieSession, Map<String, Object> globalParamsMap) {
 		if (MapUtils.isNotEmpty(globalParamsMap)) {
-			for (Map.Entry<String, Object> globalEntry : globalParamsMap
-					.entrySet()) {
-				kieSession.setGlobal(globalEntry.getKey(),
-						globalEntry.getValue());
+			for (Map.Entry<String, Object> globalEntry : globalParamsMap.entrySet()) {
+				kieSession.setGlobal(globalEntry.getKey(), globalEntry.getValue());
 			}
 		}
 	}
 
-	private void populateKnowledgeBaseProperties(
-			KieBaseConfiguration kieConfiguration,
+	private void populateKnowledgeBaseProperties(KieBaseConfiguration kieConfiguration,
 			Properties knowledgeBaseProperties) {
-		if (knowledgeBaseProperties != null
-				&& !knowledgeBaseProperties.isEmpty()) {
+		if (knowledgeBaseProperties != null && !knowledgeBaseProperties.isEmpty()) {
 			Set<Object> keys = knowledgeBaseProperties.keySet();
 			for (Object key : keys) {
-				String value = knowledgeBaseProperties
-						.getProperty((String) key);
+				String value = knowledgeBaseProperties.getProperty((String) key);
 				kieConfiguration.setProperty((String) key, value);
 			}
 		}
 	}
 
 	public void addknowledge(String memoryFileName, byte[] ruleContent) {
-		Resource byteArrayResource = ResourceFactory
-				.newByteArrayResource(ruleContent);
+		Resource byteArrayResource = ResourceFactory.newByteArrayResource(ruleContent);
 		byteArrayResource.setSourcePath(getSourcePath(memoryFileName));
 		kieFileSystem.write(byteArrayResource);
 	}
@@ -89,23 +79,19 @@ public class DroolsService implements CorePlatformService {
 		KieBuilder kieBuilder = services.newKieBuilder(kieFileSystem);
 		kieBuilder.buildAll();
 		if (kieBuilder.getResults().hasMessages(Level.ERROR)) {
-			LOGGER.error(
-					"Knowldgebase has errors, cannot proceed further..!!!");
+			LOGGER.error("Knowldgebase has errors, cannot proceed further..!!!");
 			LOGGER.error(kieBuilder.getResults().toString());
 			throw new RuntimeException("Unable to build knowledgebase");
 		}
 
 		ReleaseId releaseId = kieBuilder.getKieModule().getReleaseId();
 		KieContainer kieContainer = services.newKieContainer(releaseId);
-		KieBaseConfiguration kieConfiguration = services
-				.newKieBaseConfiguration();
-		populateKnowledgeBaseProperties(kieConfiguration,
-				knowledgeBaseProperties);
+		KieBaseConfiguration kieConfiguration = services.newKieBaseConfiguration();
+		populateKnowledgeBaseProperties(kieConfiguration, knowledgeBaseProperties);
 		kieBase = kieContainer.newKieBase(kieConfiguration);
 	}
 
-	private int fireAgendaGroup(Object factSet, String agendaGroup,
-			KieSession kieSession) {
+	private int fireAgendaGroup(Object factSet, String agendaGroup, KieSession kieSession) {
 		if (StringUtils.isNotBlank(agendaGroup)) {
 			kieSession.getAgenda().getAgendaGroup(agendaGroup).setFocus();
 		}
@@ -113,29 +99,21 @@ public class DroolsService implements CorePlatformService {
 		return kieSession.fireAllRules();
 	}
 
-	public void runRulesOnSatefullSession(Object factSet,
-			List<String> agendaGroups, Map<String, Object> globalParamsMap) {
-		Preconditions.checkNotNull(factSet,
-				ErrorConstants.NULL_FACT_ERROR_MESSAGE);
+	public void runRulesOnSatefullSession(Object factSet, List<String> agendaGroups,
+			Map<String, Object> globalParamsMap) {
+		Preconditions.checkNotNull(factSet, ErrorConstants.NULL_FACT_ERROR_MESSAGE);
+		Preconditions.checkArgument(CollectionUtils.isNotEmpty(agendaGroups),
+				ErrorConstants.NO_AGENDA_GROUP_TO_EXECUTE_MESSAGE);
 		if (!isKnowledgeAvailable()) {
-			throw new RuntimeException(
-					"Please ensure for knowledge availablity!!!");
+			throw new RuntimeException("Please ensure for knowledge availablity!!!");
 		}
-		KieSession kieSession = kieBase.newKieSession(kieSessionConfiguration,
-				null);
+		KieSession kieSession = kieBase.newKieSession(kieSessionConfiguration, null);
 		try {
 			bindGlobals(kieSession, globalParamsMap);
-
-			if (CollectionUtils.isEmpty(agendaGroups)) {
-				fireAgendaGroup(factSet, DEFAULT_AGENDA_GROUP, kieSession);
+			for (String agendaGroup : agendaGroups) {
+				fireAgendaGroup(factSet, agendaGroup, kieSession);
 			}
-			else {
-				for (String agendaGroup : agendaGroups) {
-					fireAgendaGroup(factSet, agendaGroup, kieSession);
-				}
-			}
-		}
-		finally {
+		} finally {
 			kieSession.dispose();
 		}
 	}

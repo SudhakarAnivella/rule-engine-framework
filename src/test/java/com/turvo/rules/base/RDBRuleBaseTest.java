@@ -86,14 +86,17 @@ public class RDBRuleBaseTest {
 	}
 
 	@Test
-	public void testGetAllRules() {
+	public void testGetAllActiveRules() {
 		Rule rule1 = new Rule();
 		rule1.setRuleName("r1");
 		rule1.setRuleText(TEST_RULE_TEXT);
+		rule1.setActive(Boolean.TRUE);
+		
 
 		Rule rule2 = new Rule();
 		rule2.setRuleName("r2");
 		rule2.setRuleText(TEST_RULE_TEXT);
+		rule2.setActive(Boolean.FALSE);
 
 		rule1 = testRuleBase.persistRule(rule1);
 		rule2 = testRuleBase.persistRule(rule2);
@@ -101,8 +104,9 @@ public class RDBRuleBaseTest {
 		Iterator<Rule> ruleIteror = testRuleBase.getAllActiveRules();
 		assertNotNull("ruleIterator must not be null", ruleIteror);
 
+		assertTrue("One rule must be fetched", ruleIteror.hasNext());
 		assertTrue("Rule match error", ruleIteror.next().equals(rule1));
-		assertTrue("Rule match error", ruleIteror.next().equals(rule2));
+		assertFalse("Only one rule should be fetched", ruleIteror.hasNext());
 	}
 
 	@Test
@@ -117,6 +121,7 @@ public class RDBRuleBaseTest {
 		assertTrue("rule_customerId must match",
 				ruleMeta.getCustomerId().equals(TEST_CUSTOMER_ID));
 	}
+
 
 	@Test
 	public void testGetAllActiveRulesByContext() {
