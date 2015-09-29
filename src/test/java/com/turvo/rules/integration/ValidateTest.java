@@ -28,8 +28,7 @@ import com.turvo.rules.validation.input.FactsRecord;
 
 public class ValidateTest {
 
-	static String[] ruleFiles = { "rules/test_rule_1.drl",
-			"rules/test_rule_2.drl", "rules/test_rule_3.drl" };
+	static String[] ruleFiles = { "rules/test_rule_1.drl", "rules/test_rule_2.drl", "rules/test_rule_3.drl" };
 
 	private static Validator v = null;
 
@@ -39,11 +38,9 @@ public class ValidateTest {
 		String username = "sa";
 		String password = "";
 
-		DatastoreConfig config = new DatastoreConfig(dbUrl, driverClass,
-				username, password);
+		DatastoreConfig config = new DatastoreConfig(dbUrl, driverClass, username, password);
 		Properties miscProperties = new Properties();
-		miscProperties.setProperty("hibernate.dialect",
-				"org.hibernate.dialect.HSQLDialect");
+		miscProperties.setProperty("hibernate.dialect", "org.hibernate.dialect.HSQLDialect");
 		miscProperties.setProperty("hibernate.hbm2ddl.auto", "create");
 
 		RuleBase testRuleBase = new RDBRuleBase(config, miscProperties);
@@ -53,18 +50,15 @@ public class ValidateTest {
 		for (String fileName : ruleFiles) {
 			Path path = null;
 			try {
-				path = Paths
-						.get(ClassLoader.getSystemResource(fileName).toURI());
-			}
-			catch (URISyntaxException e1) {
+				path = Paths.get(ClassLoader.getSystemResource(fileName).toURI());
+			} catch (URISyntaxException e1) {
 			}
 			Rule r = new Rule();
 			r.setActive(true);
 			r.setRuleName("rule_" + i);
 			try {
 				r.setRuleText(Files.readAllBytes(path));
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 			}
 			rules.add(r);
 			++i;
@@ -85,19 +79,16 @@ public class ValidateTest {
 
 	@Test
 	public void testValidate() {
-		FactsRecord fr = new FactsRecord();
 		Map<String, Object> topMap = new HashMap<String, Object>();
 		Map<String, String> statusMap = new HashMap<String, String>();
 		statusMap.put("note", "");
 		topMap.put("status", statusMap);
-		fr.setFactSet(topMap);
-		fr.setAgendaGroups(Arrays.asList("ag2", "ag1"));
-		fr.setContext("t3");
-		fr.setCustomerId("test_customer");
+
 		List<String> errors = new ArrayList<String>();
 		Map<String, Object> globalParams = new HashMap<String, Object>();
 		globalParams.put("errors", errors);
-		fr.setGlobalParamsMap(globalParams);
+
+		FactsRecord fr = new FactsRecord(topMap, Arrays.asList("ag2", "ag1"), "t3", "test_customer", globalParams);
 		v.validateFacts(fr);
 	}
 }

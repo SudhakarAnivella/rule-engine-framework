@@ -14,44 +14,40 @@ public class FactsRecord {
 
 	private Map<String, Object> globalParamsMap;
 
-	public Object getFactSet() {
-		return factSet;
+	public FactsRecord(Object factSet, List<String> agendaGroups, String context, String customerId,
+			Map<String, Object> globalParamsMap) {
+		super();
+		this.factSet = factSet;
+		this.agendaGroups = agendaGroups;
+		this.context = context;
+		this.customerId = customerId;
+		this.globalParamsMap = globalParamsMap;
 	}
 
-	public void setFactSet(Object factSet) {
+	public FactsRecord(Object factSet, List<String> agendaGroups, Map<String, Object> globalParamsMap) {
+		super();
 		this.factSet = factSet;
+		this.agendaGroups = agendaGroups;
+		this.globalParamsMap = globalParamsMap;
+	}
+
+	public Object getFactSet() {
+		return factSet;
 	}
 
 	public Map<String, Object> getGlobalParamsMap() {
 		return globalParamsMap;
 	}
 
-	public void setGlobalParamsMap(Map<String, Object> globalParamsMap) {
-		this.globalParamsMap = globalParamsMap;
-	}
-
 	public List<String> getAgendaGroups() {
 		return agendaGroups;
-	}
-
-	public void setAgendaGroups(List<String> agendaGroups) {
-		this.agendaGroups = agendaGroups;
 	}
 
 	public String getContext() {
 		return context;
 	}
 
-	public void setContext(String context) {
-		this.context = context;
-	}
-
 	public String getCustomerId() {
 		return customerId;
 	}
-
-	public void setCustomerId(String customerId) {
-		this.customerId = customerId;
-	}
-
 }
